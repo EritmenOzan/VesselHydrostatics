@@ -26,6 +26,7 @@ namespace HydrostaticsCalculator
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.btnCalculate = new System.Windows.Forms.Button();
             this.lblResult = new System.Windows.Forms.Label();
+            this.btnTest = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -36,6 +37,7 @@ namespace HydrostaticsCalculator
             this.cmbTrimValues.Name = "cmbTrimValues";
             this.cmbTrimValues.Size = new System.Drawing.Size(121, 24);
             this.cmbTrimValues.TabIndex = 0;
+            this.cmbTrimValues.Text = "cmbTrimValues";
             // 
             // txtTrim
             // 
@@ -43,6 +45,7 @@ namespace HydrostaticsCalculator
             this.txtTrim.Name = "txtTrim";
             this.txtTrim.Size = new System.Drawing.Size(100, 22);
             this.txtTrim.TabIndex = 1;
+            this.txtTrim.Text = "txtTrim";
             // 
             // txtDraft
             // 
@@ -50,20 +53,21 @@ namespace HydrostaticsCalculator
             this.txtDraft.Name = "txtDraft";
             this.txtDraft.Size = new System.Drawing.Size(100, 22);
             this.txtDraft.TabIndex = 2;
+            this.txtDraft.Text = "txtDraft";
             // 
             // dataGridView1
             // 
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(13, 138);
+            this.dataGridView1.Location = new System.Drawing.Point(12, 208);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.RowHeadersWidth = 51;
             this.dataGridView1.RowTemplate.Height = 24;
-            this.dataGridView1.Size = new System.Drawing.Size(240, 150);
+            this.dataGridView1.Size = new System.Drawing.Size(303, 150);
             this.dataGridView1.TabIndex = 3;
             // 
             // btnCalculate
             // 
-            this.btnCalculate.Location = new System.Drawing.Point(13, 307);
+            this.btnCalculate.Location = new System.Drawing.Point(13, 138);
             this.btnCalculate.Name = "btnCalculate";
             this.btnCalculate.Size = new System.Drawing.Size(75, 23);
             this.btnCalculate.TabIndex = 4;
@@ -73,15 +77,26 @@ namespace HydrostaticsCalculator
             // lblResult
             // 
             this.lblResult.AutoSize = true;
-            this.lblResult.Location = new System.Drawing.Point(13, 351);
+            this.lblResult.Location = new System.Drawing.Point(12, 176);
             this.lblResult.Name = "lblResult";
             this.lblResult.Size = new System.Drawing.Size(173, 16);
             this.lblResult.TabIndex = 5;
             this.lblResult.Text = "Sonuçlar burada görünecek";
             // 
+            // btnTest
+            // 
+            this.btnTest.Location = new System.Drawing.Point(110, 138);
+            this.btnTest.Name = "btnTest";
+            this.btnTest.Size = new System.Drawing.Size(75, 23);
+            this.btnTest.TabIndex = 6;
+            this.btnTest.Text = "Test Et";
+            this.btnTest.UseVisualStyleBackColor = true;
+            this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
+            // 
             // Form1
             // 
             this.ClientSize = new System.Drawing.Size(683, 487);
+            this.Controls.Add(this.btnTest);
             this.Controls.Add(this.lblResult);
             this.Controls.Add(this.btnCalculate);
             this.Controls.Add(this.dataGridView1);
@@ -89,10 +104,20 @@ namespace HydrostaticsCalculator
             this.Controls.Add(this.txtTrim);
             this.Controls.Add(this.cmbTrimValues);
             this.Name = "Form1";
+            this.Text = "dataGridView1";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
+        }
+
+        private void btnTest_Click(object sender, EventArgs e)
+        {
+            double[] testRow = { -3.75, 1.02, 900.00, 28.50, 0.001, 1.00 }; // Örnek sabit veriler
+
+            DisplayInterpolatedResult(testRow);
+
+            MessageBox.Show("Test verileri DataGridView'de gösteriliyor.");
         }
     }
 }

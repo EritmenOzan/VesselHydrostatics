@@ -33,6 +33,7 @@ namespace HydrostaticsCalculator
         public Form1()
         {
             InitializeComponent();
+            dataGridView1.AutoGenerateColumns = false;
             string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "hydrostatics.txt");
             LoadHydrostatics(filePath);
             PopulateTrimValues();
@@ -46,7 +47,12 @@ namespace HydrostaticsCalculator
 
             foreach (var line in lines)
             {
+                // Boş satırları, başlıkları ve açıklamaları atla
+                if (string.IsNullOrWhiteSpace(line) || line.Any(char.IsLetter))
+                    continue;
+
                 var parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
                 if (parts.Length > 2 && double.TryParse(parts[0], out double trim) && double.TryParse(parts[1], out double draft))
                 {
                     trimValues.Add(trim);
@@ -54,11 +60,16 @@ namespace HydrostaticsCalculator
                     var row = parts.Select(value =>
                     {
                         if (double.TryParse(value, out double result)) return result;
-                        return double.NaN;
+                        return double.NaN; // Sayısal olmayan değerleri NaN yap
                     }).ToArray();
 
                     dataList.Add(row);
                 }
+            }
+            if (dataList.Count == 0)
+            {
+                MessageBox.Show("TXT dosyasından veri okunamadı. Lütfen dosya formatını kontrol edin.");
+                return;
             }
 
             // Convert dataList to a 2D array (double[,])
@@ -92,7 +103,6 @@ namespace HydrostaticsCalculator
         {
             var selectedTrim = (double)cmbTrimValues.SelectedItem;
 
-            // ConvertToEnumerable ile çok boyutlu diziyi LINQ ile çalışılabilir hale getiriyoruz
             var filteredData = ConvertToEnumerable(HydrostaticsAll)
                 .Where(row => Math.Abs(row[0] - selectedTrim) < 0.01)
                 .ToArray();
@@ -102,17 +112,38 @@ namespace HydrostaticsCalculator
 
         private void DisplayTable(double[][] tableData)
         {
+            if (tableData.Length > 0)
+            {
+                dataGridView1.ColumnCount = tableData[0].Length; // Satırdaki sütun sayısı
+            }
             dataGridView1.Rows.Clear();
             foreach (var row in tableData)
             {
                 dataGridView1.Rows.Add(row.Select(v => v.ToString("F2")).ToArray());
             }
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
         }
 
         private void btnCalculate_Click(object sender, EventArgs e)
         {
             if (double.TryParse(txtTrim.Text, out double trim) && double.TryParse(txtDraft.Text, out double draft))
             {
+                double minTrim = HydrostaticsTrimDegerleri.Min();
+                double maxTrim = HydrostaticsTrimDegerleri.Max();
+                double minDraft = ConvertToEnumerable(HydrostaticsAll).Min(row => row[1]);
+                double maxDraft = ConvertToEnumerable(HydrostaticsAll).Max(row => row[1]);
+
+                if (trim < minTrim || trim > maxTrim)
+                {
+                    MessageBox.Show($"Trim değeri geçersiz. Lütfen {minTrim} ile {maxTrim} arasında bir değer girin.");
+                    return;
+                }
+
+                if (draft < minDraft || draft > maxDraft)
+                {
+                    MessageBox.Show($"Draft değeri geçersiz. Lütfen {minDraft} ile {maxDraft} arasında bir değer girin.");
+                    return;
+                }
                 CalculateInterpolatedValues(trim, draft);
             }
             else
@@ -125,7 +156,11 @@ namespace HydrostaticsCalculator
         {
             var trims = HydrostaticsTrimDegerleri.OrderBy(t => Math.Abs(t - inputTrim)).Take(2).ToArray();
 
-            if (trims.Length < 2) return;
+            if (trims.Length < 2)
+            {
+                MessageBox.Show("Uygun iki trim değeri bulunamadı.");
+                return;
+            }
 
             var lowerTrimTable = ConvertToEnumerable(HydrostaticsAll)
                 .Where(row => Math.Abs(row[0] - trims[0]) < 0.01)
@@ -135,10 +170,20 @@ namespace HydrostaticsCalculator
                 .Where(row => Math.Abs(row[0] - trims[1]) < 0.01)
                 .ToArray();
 
+            if (!lowerTrimTable.Any() || !upperTrimTable.Any())
+            {
+                MessageBox.Show("Uygun satırlar bulunamadı.");
+                return;
+            }
+
             var lowerDraftRows = lowerTrimTable.OrderBy(row => Math.Abs(row[1] - inputDraft)).Take(2).ToArray();
             var upperDraftRows = upperTrimTable.OrderBy(row => Math.Abs(row[1] - inputDraft)).Take(2).ToArray();
 
-            if (lowerDraftRows.Length < 2 || upperDraftRows.Length < 2) return;
+            if (lowerDraftRows.Length < 2 || upperDraftRows.Length < 2)
+            {
+                MessageBox.Show("Interpolasyon için yeterli veriler bulunamadı.");
+                return;
+            }
 
             var lowerInterpolatedRow = lowerDraftRows[0]
                 .Zip(lowerDraftRows[1], (v1, v2) => Interpolate(inputDraft, lowerDraftRows[0][1], v1, lowerDraftRows[1][1], v2))
@@ -162,7 +207,16 @@ namespace HydrostaticsCalculator
 
         private void DisplayInterpolatedResult(double[] resultRow)
         {
+            if (resultRow == null || resultRow.Length == 0)
+            {
+                MessageBox.Show("Sonuç boş. Interpolasyon başarısız oldu.");
+                return;
+            }
             lblResult.Text = string.Join(", ", resultRow.Select(v => v.ToString("F2")));
+            dataGridView1.ColumnCount = resultRow.Length;
+            dataGridView1.Rows.Clear();
+            dataGridView1.Rows.Add(resultRow.Select(v => v.ToString("F2")).ToArray());
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
         }
 
         private ComboBox cmbTrimValues;
@@ -171,5 +225,6 @@ namespace HydrostaticsCalculator
         private DataGridView dataGridView1;
         private Button btnCalculate;
         private Label lblResult;
+        private Button btnTest;
     }
 }
