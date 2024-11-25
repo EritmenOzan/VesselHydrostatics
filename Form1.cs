@@ -46,6 +46,7 @@ namespace HydrostaticsCalculator
             this.txtTrim.Size = new System.Drawing.Size(100, 22);
             this.txtTrim.TabIndex = 1;
             this.txtTrim.Text = "txtTrim";
+            this.txtTrim.TextChanged += new System.EventHandler(this.txtTrim_TextChanged);
             // 
             // txtDraft
             // 
@@ -64,6 +65,7 @@ namespace HydrostaticsCalculator
             this.dataGridView1.RowTemplate.Height = 24;
             this.dataGridView1.Size = new System.Drawing.Size(303, 150);
             this.dataGridView1.TabIndex = 3;
+            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // btnCalculate
             // 
@@ -73,6 +75,7 @@ namespace HydrostaticsCalculator
             this.btnCalculate.TabIndex = 4;
             this.btnCalculate.Text = "Hesapla";
             this.btnCalculate.UseVisualStyleBackColor = true;
+            this.btnCalculate.Click += new System.EventHandler(this.btnCalculate_Click_1);
             // 
             // lblResult
             // 
@@ -117,7 +120,46 @@ namespace HydrostaticsCalculator
 
             DisplayInterpolatedResult(testRow);
 
+
             MessageBox.Show("Test verileri DataGridView'de gösteriliyor.");
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void btnCalculate_Click_1(object sender, EventArgs e)
+        {
+            if (double.TryParse(txtTrim.Text, out double trim) && double.TryParse(txtDraft.Text, out double draft))
+            {
+                double minTrim = HydrostaticsTrimDegerleri.Min();
+                double maxTrim = HydrostaticsTrimDegerleri.Max();
+                double minDraft = ConvertToEnumerable(HydrostaticsAll).Min(row => row[1]);
+                double maxDraft = ConvertToEnumerable(HydrostaticsAll).Max(row => row[1]);
+
+                if (trim < minTrim || trim > maxTrim)
+                {
+                    MessageBox.Show($"Trim değeri geçersiz. Lütfen {minTrim} ile {maxTrim} arasında bir değer girin.");
+                    return;
+                }
+
+                if (draft < minDraft || draft > maxDraft)
+                {
+                    MessageBox.Show($"Draft değeri geçersiz. Lütfen {minDraft} ile {maxDraft} arasında bir değer girin.");
+                    return;
+                }
+                CalculateInterpolatedValues(trim, draft);
+            }
+            else
+            {
+                MessageBox.Show("Lütfen geçerli bir trim ve draft değeri girin.");
+            }
+        }
+
+        private void txtTrim_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -39,40 +39,62 @@ namespace HydrostaticsCalculator
             PopulateTrimValues();
         }
 
+
         private void LoadHydrostatics(string filePath)
         {
-            var lines = File.ReadAllLines(filePath);
-            var trimValues = new HashSet<double>();
-            var dataList = new List<double[]>();
+            var lines = File.ReadAllLines(filePath); // Dosyadaki tüm satırları oku
+            var trimValues = new HashSet<double>(); // Trim değerlerini saklamak için bir set
+            var dataList = new List<double[]>(); // İşlenmiş veriler için liste
 
             foreach (var line in lines)
             {
                 // Boş satırları, başlıkları ve açıklamaları atla
-                if (string.IsNullOrWhiteSpace(line) || line.Any(char.IsLetter))
-                    continue;
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("Hydrostatics") || line.StartsWith("Trim") || line.StartsWith("Heel") || line.Contains("Displt"))
+                {
+                    continue; // Geçersiz satırı atla
+                }
 
+                // Satırı sütunlara ayır
                 var parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
-                if (parts.Length > 2 && double.TryParse(parts[0], out double trim) && double.TryParse(parts[1], out double draft))
+                // Yetersiz sütun sayısına sahip satırları atla
+                if (parts.Length < 3)
                 {
-                    trimValues.Add(trim);
+                    Console.WriteLine($"Atlanıyor: {line}"); // Debug için log
+                    continue;
+                }
 
+                // Trim ve draft verilerini kontrol et
+                if (double.TryParse(parts[0], out double trim) && double.TryParse(parts[1], out double draft))
+                {
+                    trimValues.Add(trim); // Benzersiz trim değerlerini sakla
+
+                    // Satırdaki tüm değerleri dönüştür
                     var row = parts.Select(value =>
                     {
-                        if (double.TryParse(value, out double result)) return result;
-                        return double.NaN; // Sayısal olmayan değerleri NaN yap
+                        if (double.TryParse(value, out double result))
+                            return result;
+
+                        Console.WriteLine($"Hatalı veri tespit edildi: {value}"); // Hatalı veri debug
+                        return double.NaN; // Hatalı veriyi NaN olarak işaretle
                     }).ToArray();
 
-                    dataList.Add(row);
+                    dataList.Add(row); // İşlenmiş veriyi listeye ekle
+                }
+                else
+                {
+                    Console.WriteLine($"Geçersiz trim/draft: {line}"); // Trim veya draft düzgün okunamadı
                 }
             }
+
             if (dataList.Count == 0)
             {
-                MessageBox.Show("TXT dosyasından veri okunamadı. Lütfen dosya formatını kontrol edin.");
+                MessageBox.Show("TXT dosyasından veri okunamadı. Lütfen dosya formatını ve verilerin doğruluğunu kontrol edin.");
+                Console.WriteLine("Hiçbir veri işlenmedi. Tüm satırlar atlandı."); // Debug için
                 return;
             }
 
-            // Convert dataList to a 2D array (double[,])
+            // 2D array'e dönüştür
             int rowCount = dataList.Count;
             int colCount = dataList[0].Length;
 
@@ -86,8 +108,11 @@ namespace HydrostaticsCalculator
                 }
             }
 
+            // Trim değerlerini sıralı bir diziye dönüştür
             HydrostaticsTrimDegerleri = trimValues.OrderBy(t => t).ToArray();
         }
+
+
 
         private void PopulateTrimValues()
         {
@@ -112,6 +137,16 @@ namespace HydrostaticsCalculator
 
         private void DisplayTable(double[][] tableData)
         {
+            if (tableData.Length == 0)
+            {
+                MessageBox.Show("Gösterilecek veri bulunamadı!");
+                return;
+            }
+
+            foreach (var row in tableData)
+            {
+                Console.WriteLine(string.Join(", ", row)); // Veriyi Console'a yazdırarak kontrol et
+            }
             if (tableData.Length > 0)
             {
                 dataGridView1.ColumnCount = tableData[0].Length; // Satırdaki sütun sayısı
@@ -207,6 +242,7 @@ namespace HydrostaticsCalculator
 
         private void DisplayInterpolatedResult(double[] resultRow)
         {
+
             if (resultRow == null || resultRow.Length == 0)
             {
                 MessageBox.Show("Sonuç boş. Interpolasyon başarısız oldu.");
