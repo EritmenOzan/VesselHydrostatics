@@ -12,6 +12,20 @@ namespace HydrostaticsCalculator
 {
     public partial class Form1 : Form
     {
+        private void SetupDataGridViewHeaders()
+        {
+            // Sabit başlıklar
+            string[] headers = { "Trim", "Draft", "Displt", "LCB", "TCB", "VCB", "WPA", "LCF", "KML", "KMT", "BML", "BMT", "IL", "IT", "TPC", "MTC", "WSA" };
+
+            // DataGridView'deki mevcut sütunları temizle
+            dataGridView1.Columns.Clear();
+
+            // Her başlık için sütun ekle
+            foreach (string header in headers)
+            {
+                dataGridView1.Columns.Add(header, header); // Sütun adı ve başlığı aynı
+            }
+        }
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -116,6 +130,8 @@ namespace HydrostaticsCalculator
 
         private void btnTest_Click(object sender, EventArgs e)
         {
+            SetupDataGridViewHeaders();
+
             double[] testRow = { -3.75, 1.02, 900.00, 28.50, 0.001, 1.00 }; // Örnek sabit veriler
 
             DisplayInterpolatedResult(testRow);
@@ -131,6 +147,8 @@ namespace HydrostaticsCalculator
 
         private void btnCalculate_Click_1(object sender, EventArgs e)
         {
+            SetupDataGridViewHeaders();
+
             if (double.TryParse(txtTrim.Text, out double trim) && double.TryParse(txtDraft.Text, out double draft))
             {
                 double minTrim = HydrostaticsTrimDegerleri.Min();
