@@ -9,7 +9,7 @@ a.	Trim değeri: kullanıcı tarafından girilebilir
 b.	Draft değeri: kullanıcı tarafından girilebilir.
 c.	Bu trim ve draft değerine göre diğer değişkenleri program otomatikman veriyor. Bunu yaparken lineer interpolasyon kullanılıyor.
 
-Örneğin:
+Örnek olarak:
 Kullanıcı a kutusuna -3,7 trim ve b kutusuna 1,02 metre draft değerleri girsin.
 a.	Program -3,7 m trim değerine en yakın 2 tabloyu buluyor (-4,0 ve -3,5trim tabloları)
 b.	Program 1,02 m draft değerine en yakın 2 satırları buluyor. (1,00 ve 1,03)
